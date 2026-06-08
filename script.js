@@ -102,3 +102,59 @@ posts.innerHTML+=`
 
 regionFilter.onchange=loadPosts;
 loadPosts();
+let currentRoom = null;
+
+window.openChat = (postId) => {
+
+    currentRoom = postId;
+
+    document.getElementById('chatModal').style.display = 'block';
+
+    const messagesRef = query(
+        collection(db, 'chats', postId, 'messages'),
+        orderBy('timestamp')
+    );
+
+    onSnapshot(messagesRef, (snapshot) => {
+
+        const box = document.getElementById('chatMessages');
+
+        box.innerHTML = '';
+
+        snapshot.forEach(doc => {
+
+            const msg = doc.data();
+
+            box.innerHTML += `
+                <div>
+                    <b>${msg.sender}</b> :
+                    ${msg.text}
+                </div>
+            `;
+        });
+
+        box.scrollTop = box.scrollHeight;
+    });
+};
+
+window.closeChat = () => {
+    document.getElementById('chatModal').style.display = 'none';
+};
+
+window.sendMessage = async () => {
+
+    const input = document.getElementById('chatInput');
+
+    if (!input.value.trim()) return;
+
+    await addDoc(
+        collection(db, 'chats', currentRoom, 'messages'),
+        {
+            sender: '익명사용자',
+            text: input.value,
+            timestamp: serverTimestamp()
+        }
+    );
+
+    input.value = '';
+};
