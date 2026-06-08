@@ -1,7 +1,19 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore,collection,addDoc,getDocs,deleteDoc,doc,updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const firebaseConfig={
 apiKey:'AIzaSyASV-JqE8ou5_r51Bfc_BwFek623_M55tg',
 authDomain:'wonderful-7a953.firebaseapp.com',
@@ -83,7 +95,7 @@ posts.innerHTML+=`
 <button onclick="recoverPost('${d.id}')">회수완료</button>
 <button onclick="editPost('${d.id}')">수정</button>
 <button onclick="removePost('${d.id}')">삭제</button>
-<button onclick="alert('채팅 기능은 chats 컬렉션 생성 후 연결')">채팅</button>
+<button onclick="openChat('${d.id}')">채팅</button>
 </div>`;
 });
 }
