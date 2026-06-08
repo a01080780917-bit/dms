@@ -45,7 +45,18 @@
 
 <h2>게시물</h2>
 <div id="posts"></div>
+<div id="chatModal" style="display:none;">
+    <h2>채팅</h2>
 
+    <div id="chatMessages"
+         style="height:300px;overflow-y:auto;border:1px solid #ccc;padding:10px;">
+    </div>
+
+    <input id="chatInput" placeholder="메시지 입력">
+
+    <button onclick="sendMessage()">전송</button>
+    <button onclick="closeChat()">닫기</button>
+</div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script type="module" src="script.js"></script>
 </body>
