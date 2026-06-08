@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>분실물 찾기 플랫폼</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+</head>
+<body>
+<header>
+<h1>🔍 분실물 찾기 플랫폼</h1>
+<select id="regionFilter">
+<option value="">전체 지역</option>
+<option>동구</option>
+<option>서구</option>
+<option>유성구</option>
+</select>
+</header>
+
+<div class="container">
+<div class="panel">
+<h2>분실물 등록</h2>
+<input id="title" placeholder="제목">
+<select id="category">
+<option>전자기기</option>
+<option>의류</option>
+<option>지갑</option>
+<option>가방</option>
+<option>기타</option>
+</select>
+<select id="region">
+<option>동구</option>
+<option>서구</option>
+<option>유성구</option>
+</select>
+<textarea id="description" placeholder="설명"></textarea>
+<input type="file" id="image">
+<button onclick="getLocation()">현재 위치</button>
+<button onclick="savePost()">등록</button>
+</div>
+
+<div id="map"></div>
+</div>
+
+<h2>게시물</h2>
+<div id="posts"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script type="module" src="script.js"></script>
+</body>
+</html>
