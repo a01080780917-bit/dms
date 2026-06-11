@@ -29,31 +29,27 @@ const db = getFirestore(app);
 let lat = 36.35;
 let lng = 127.38;
 
-const map = L.map('map').setView([36.35,127.38],12);
+const map = L.map('map').setView([36.35, 127.38], 12);
 
 L.tileLayer(
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map);
 
 window.getLocation = () => {
-
-  navigator.geolocation.getCurrentPosition(p => {
-
+  navigator.geolocation.getCurrentPosition((p) => {
     lat = p.coords.latitude;
     lng = p.coords.longitude;
 
-    map.setView([lat,lng],14);
-
+    map.setView([lat, lng], 14);
   });
-
 };
 
 window.savePost = () => {
 
   const file = image.files[0];
 
-  if(!file){
-    alert('사진을 선택하세요');
+  if (!file) {
+    alert('사진을 선택해주세요.');
     return;
   }
 
@@ -61,148 +57,139 @@ window.savePost = () => {
 
   reader.onload = async () => {
 
-    await addDoc(collection(db,'posts'),{
-
-      title:title.value,
-      category:category.value,
-      region:region.value,
-      description:description.value,
-      imageBase64:reader.result,
-      latitude:lat,
-      longitude:lng,
-      status:'미회수'
-
+    await addDoc(collection(db, 'posts'), {
+      title: title.value,
+      category: category.value,
+      region: region.value,
+      description: description.value,
+      imageBase64: reader.result,
+      latitude: lat,
+      longitude: lng,
+      status: '미회수'
     });
 
-    loadPosts();
+    title.value = '';
+    description.value = '';
+    image.value = '';
 
+    loadPosts();
   };
 
   reader.readAsDataURL(file);
-
 };
 
-window.removePost = async(id)=>{
+window.removePost = async (id) => {
 
-  await deleteDoc(doc(db,'posts',id));
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+
+  await deleteDoc(doc(db, 'posts', id));
 
   loadPosts();
-
 };
 
-window.recoverPost = async(id)=>{
+window.recoverPost = async (id) => {
 
-  await updateDoc(
-    doc(db,'posts',id),
-    {
-      status:'회수완료'
-    }
-  );
+  await updateDoc(doc(db, 'posts', id), {
+    status: '회수완료'
+  });
 
   loadPosts();
-
 };
 
-window.editPost = async(id)=>{
+window.editPost = async (id) => {
 
-  const titleValue =
-    prompt('제목 입력');
+  const titleValue = prompt('제목 입력');
+  if (!titleValue) return;
 
-  if(!titleValue) return;
+  const categoryValue = prompt('카테고리 입력');
+  if (!categoryValue) return;
 
-  const categoryValue =
-    prompt('카테고리 입력');
+  const regionValue = prompt('지역 입력');
+  if (!regionValue) return;
 
-  const regionValue =
-    prompt('지역 입력');
+  const descriptionValue = prompt('설명 입력');
+  if (!descriptionValue) return;
 
-  const descriptionValue =
-    prompt('설명 입력');
+  const statusValue = prompt('상태 입력 (미회수 또는 회수완료)');
+  if (!statusValue) return;
 
-  const statusValue =
-    prompt('상태 입력 (미회수 또는 회수완료)');
-
-  await updateDoc(
-    doc(db,'posts',id),
-    {
-      title:titleValue,
-      category:categoryValue,
-      region:regionValue,
-      description:descriptionValue,
-      status:statusValue
-    }
-  );
+  await updateDoc(doc(db, 'posts', id), {
+    title: titleValue,
+    category: categoryValue,
+    region: regionValue,
+    description: descriptionValue,
+    status: statusValue
+  });
 
   loadPosts();
-
 };
 
-async function loadPosts(){
+async function loadPosts() {
 
-  posts.innerHTML='';
+  posts.innerHTML = '';
 
-  const snap =
-    await getDocs(collection(db,'posts'));
+  const snap = await getDocs(collection(db, 'posts'));
 
-  snap.forEach(d=>{
+  snap.forEach((d) => {
 
     const p = d.data();
 
-    const filter =
-      regionFilter.value;
+    const filter = regionFilter.value;
 
-    if(filter && p.region !== filter)
-      return;
+    if (filter && p.region !== filter) return;
 
-    L.marker([p.latitude,p.longitude])
+    L.marker([p.latitude, p.longitude])
       .addTo(map)
-      .bindPopup(
-        `<b>${p.title}</b><br>${p.region}`
-      );
+      .bindPopup(`
+        <b>${p.title}</b><br>
+        ${p.region}
+      `);
 
     posts.innerHTML += `
       <div class="card">
 
-      <img src="${p.imageBase64}">
+        <img src="${p.imageBase64}">
 
-      <h3>${p.title}</h3>
+        <h3>${p.title}</h3>
 
-      <p>${p.description}</p>
+        <p>${p.description}</p>
 
-      <p>${p.category} | ${p.region}</p>
+        <p>${p.category} | ${p.region}</p>
 
-      <span class="badge">
-        ${p.status || '미회수'}
-      </span>
+        <span class="badge">
+          ${p.status || '미회수'}
+        </span>
 
-      <br><br>
+        <br><br>
 
-      <button onclick="recoverPost('${d.id}')">
-      회수완료
-      </button>
+        <button onclick="recoverPost('${d.id}')">
+          회수완료
+        </button>
 
-      <button onclick="editPost('${d.id}')">
-      수정
-      </button>
+        <button onclick="editPost('${d.id}')">
+          수정
+        </button>
 
-      <button onclick="removePost('${d.id}')">
-      삭제
-      </button>
+        <button onclick="removePost('${d.id}')">
+          삭제
+        </button>
 
-      <button onclick="openChat('${d.id}')">
-      채팅
-      </button>
+        <button onclick="openChat('${d.id}')">
+          채팅
+        </button>
 
       </div>
     `;
-
   });
-
 }
 
 regionFilter.onchange = loadPosts;
 
 loadPosts();
+
+/* ==========================
+   채팅 기능
+========================== */
 
 let currentRoom = null;
 
@@ -210,84 +197,65 @@ window.openChat = (postId) => {
 
   currentRoom = postId;
 
-  document.getElementById(
-    'chatModal'
-  ).style.display = 'block';
+  document.getElementById('chatModal').style.display = 'block';
 
   const q = query(
-    collection(db,'chats'),
-    where('postId','==',postId),
+    collection(db, 'chats'),
+    where('postId', '==', postId),
     orderBy('creatAt')
   );
 
-  onSnapshot(q,(snapshot)=>{
+  onSnapshot(q, (snapshot) => {
 
     const box =
-      document.getElementById(
-        'chatMessages'
-      );
+      document.getElementById('chatMessages');
 
     box.innerHTML = '';
 
-    snapshot.forEach((d)=>{
+    snapshot.forEach((d) => {
 
       const msg = d.data();
 
       box.innerHTML += `
         <div style="
-          padding:8px;
-          margin:5px 0;
-          background:#f5f5f5;
-          border-radius:8px;
+          background:#f4f6f8;
+          padding:10px;
+          margin:8px 0;
+          border-radius:10px;
         ">
           <b>${msg.user}</b><br>
           ${msg.message}
         </div>
       `;
-
     });
 
-    box.scrollTop =
-      box.scrollHeight;
+    box.scrollTop = box.scrollHeight;
+  });
+};
+
+window.closeChat = () => {
+
+  document.getElementById('chatModal').style.display = 'none';
+};
+
+window.sendMessage = async () => {
+
+  const input =
+    document.getElementById('chatInput');
+
+  if (!input.value.trim()) return;
+
+  const username =
+    prompt('이름 입력', '익명') || '익명';
+
+  await addDoc(collection(db, 'chats'), {
+
+    postId: currentRoom,
+    user: username,
+    message: input.value,
+    creatAt: Date.now()
 
   });
 
-};
-
-window.closeChat = ()=>{
-
-  document.getElementById(
-    'chatModal'
-  ).style.display='none';
-
-};
-
-window.sendMessage = async()=>{
-
-  const input =
-    document.getElementById(
-      'chatInput'
-    );
-
-  if(!input.value.trim())
-    return;
-
-  const username =
-    prompt(
-      '이름 입력',
-      '익명'
-    ) || '익명';
-
-  await addDoc(
-    collection(db,'chats'),
-    {
-      postId:currentRoom,
-      user:username,
-      message:input.value,
-      creatAt:Date.now()
-    }
-  );
-
-  input.value='';
-
+  input.value = '';
 };
